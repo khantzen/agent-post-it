@@ -1,0 +1,53 @@
+{
+  "name": "My Post It",
+  "description": "API de gestion de post-its",
+  "base_url": "http://localhost:5000",
+  "concepts": {
+    "project": "Chaque post-it est lie a un ou plusieurs projets, stockes dans le champ 'project' sous forme d'une chaine avec les noms separes par '|' (ex: 'web|infra')."
+  },
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/postit",
+      "description": "Cree un post-it lie a un ou plusieurs projets",
+      "body": {
+        "title": "string (requis)",
+        "body": "string (requis)",
+        "project": "string (requis) : nom(s) de(s) projet(s), separes par '|' (ex: 'web|infra')"
+      },
+      "returns": "Le post-it cree avec son champ 'project' (201)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/postit/<id>",
+      "description": "Retourne le post-it correspondant a l'id",
+      "returns": "Le post-it (200) ou 404"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/postit/<id>",
+      "description": "Supprime le post-it correspondant a l'id",
+      "returns": "204 ou 404"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/postit/<id>",
+      "description": "Modifie le titre et le body du post-it correspondant a l'id",
+      "body": {
+        "title": "string (requis)",
+        "body": "string (requis)"
+      },
+      "returns": "Le post-it modifie (200) ou 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/postit/list/",
+      "description": "Liste tous les post-its tries par date de creation",
+      "query": {
+        "sort": "asc|desc (optionnel, defaut: desc, du plus recent au plus ancien)",
+        "projet": "string (optionnel) : ne retourne que les post-its lies a ce projet (correspondance exacte sur le nom du projet)"
+      },
+      "returns": "Liste des post-its (200)"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ Key points:
 - HTTP API on port 5000, full description at `http://localhost:5000/agents`
 - HTML management page at `http://localhost:5000/`
 - SQLite storage: `postits.db` database (path can be overridden via the `POSTIT_DB` environment variable), post-its persist across restarts
+- Host, port and debug mode are controlled by the standard Flask environment variables: `FLASK_RUN_HOST`, `FLASK_RUN_PORT` and `FLASK_DEBUG` (debug disabled by default)
 
 ## How to
 
@@ -21,8 +22,16 @@ The application is then available at `http://localhost:5000`. Post-its are persi
 For local usage without a container:
 
 ```bash
-nix-shell --run "python app.py"
+nix-shell --run "flask --app app run"
 ```
+
+By default the app listens on `127.0.0.1:5000`. Override with `FLASK_RUN_HOST` and `FLASK_RUN_PORT`:
+
+```bash
+FLASK_RUN_HOST=0.0.0.0 FLASK_RUN_PORT=5000 nix-shell --run "flask --app app run"
+```
+
+Debug mode is disabled by default; enable it with `FLASK_DEBUG=1` for local development only.
 
 ## Add it to your AGENTS.md
 
