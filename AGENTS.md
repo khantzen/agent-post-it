@@ -24,6 +24,7 @@ Endpoints principaux :
 
 ## Remarques
 
-- Stockage en memoire : les post-its sont perdus au redemarrage
+- Stockage en base SQLite Locale
 - `PUT` ne permet pas de modifier le champ `project` (fixe a la creation)
 - `debug=True` est actif dans `app.py` : a desactiver si l'application est exposee au-dela du poste local
+- Projet locale à ne pas utiliser en production
