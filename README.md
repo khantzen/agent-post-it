@@ -1,24 +1,24 @@
 # Agents Post It App
 
-Application de gestion de post-its en Python/Flask, pensée pour être utilisée par un agent de code (CLI type Vibe) via son API HTTP. Chaque post-it est lié à un ou plusieurs projets (champ `project`, noms séparés par `|`), ce qui permet à l'agent de retrouver les notes associées au dépôt sur lequel il travaille.
+Post-it management application in Python/Flask, designed to be used by a coding agent (CLI such as Vibe) through its HTTP API. Each post-it is linked to one or more projects (`project` field, names separated by `|`), which allows the agent to find the notes associated with the repository it is working on.
 
-Points clés :
+Key points:
 
-- API HTTP sur le port 5000, descriptif complet sur `http://localhost:5000/agents`
-- Page HTML de gestion sur `http://localhost:5000/`
-- Stockage SQLite : base `postits.db` (chemin surchargeable via la variable d'environnement `POSTIT_DB`), les post-its persistent au redémarrage
+- HTTP API on port 5000, full description at `http://localhost:5000/agents`
+- HTML management page at `http://localhost:5000/`
+- SQLite storage: `postits.db` database (path can be overridden via the `POSTIT_DB` environment variable), post-its persist across restarts
 
 ## How to
 
-Build de l'image et lancement via docker compose :
+Build the image and start it via docker compose:
 
 ```bash
 docker compose up -d --build
 ```
 
-L'application est ensuite disponible sur `http://localhost:5000`. Les post-its sont persistés dans le volume Docker `postit-data` (fichier `/app/data/postits.db` dans le conteneur), ils survivent aux recréations du conteneur.
+The application is then available at `http://localhost:5000`. Post-its are persisted in the `postit-data` Docker volume (`/app/data/postits.db` file inside the container), they survive container recreations.
 
-Pour un usage local sans conteneur :
+For local usage without a container:
 
 ```bash
 nix-shell --run "python app.py"
