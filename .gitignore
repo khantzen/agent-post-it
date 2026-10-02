@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environnements virtuels
+.venv/
+venv/
+
+# Tests / outils
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Variables d'environnement / secrets
+.env
+.env.*
+
+# Nix
+.result
+.direnv/
+
+# Docker
+*.log
+
+# Editeurs
+.vscode/
+.idea/
+*.swp

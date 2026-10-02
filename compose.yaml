@@ -1,0 +1,13 @@
+services:
+  postit:
+    build: .
+    image: local/kha-post-it:1.0.2
+    ports:
+      - "5000:5000"
+    environment:
+      POSTIT_DB: /app/data/postits.db
+    volumes:
+      - postit-data:/app/data
+
+volumes:
+  postit-data:

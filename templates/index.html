@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Post It</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f0f0e8; margin: 2rem; }
+    h1 { text-align: center; }
+    #form-container {
+      background: #fff;
+      max-width: 500px;
+      margin: 0 auto 2rem;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    #form-container input, #form-container textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font: inherit;
+    }
+    #form-container textarea { min-height: 80px; resize: vertical; }
+    button { cursor: pointer; border: none; border-radius: 4px; padding: 0.5rem 1rem; font: inherit; }
+    #submit-btn { background: #f5c518; font-weight: bold; width: 100%; }
+    #sort-select { padding: 0.25rem; margin-left: 0.5rem; }
+    #toolbar { max-width: 900px; margin: 0 auto 1rem; text-align: right; }
+    #postits {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .postit {
+      background: #fdf6b2;
+      padding: 1rem;
+      border-radius: 4px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      word-wrap: break-word;
+    }
+    .postit h3 { margin: 0 0 0.5rem; }
+    .postit .date { font-size: 0.75rem; color: #777; display: block; margin-bottom: 0.5rem; }
+    .postit .projects { margin-bottom: 0.25rem; }
+    .postit .projects span {
+      display: inline-block;
+      background: #e0a800;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      margin-right: 0.25rem;
+    }
+    .postit .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .postit .edit-btn { background: #4a90d9; color: #fff; }
+    .postit .delete-btn { background: #d94a4a; color: #fff; }
+    .error-msg { color: #d94a4a; text-align: center; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>My Post It</h1>
+
+  <div id="form-container">
+    <p id="form-error" class="error-msg" hidden></p>
+    <form id="postit-form">
+      <input type="hidden" id="postit-id">
+      <input type="text" id="title" placeholder="Titre" required>
+      <input type="text" id="project" placeholder="Projet(s), separes par |" required>
+      <textarea id="body" placeholder="Contenu" required></textarea>
+      <button type="submit" id="submit-btn">Ajouter</button>
+    </form>
+  </div>
+
+  <div id="toolbar">
+    Tri :
+    <select id="sort-select">
+      <option value="desc">Du plus recent au plus ancien</option>
+      <option value="asc">Du plus ancien au plus recent</option>
+    </select>
+  </div>
+
+  <p id="list-error" class="error-msg" hidden></p>
+  <div id="postits"></div>
+
+  <script>
+    const form = document.getElementById("postit-form");
+    const formError = document.getElementById("form-error");
+    const listError = document.getElementById("list-error");
+    const idInput = document.getElementById("postit-id");
+    const titleInput = document.getElementById("title");
+    const projectInput = document.getElementById("project");
+    const bodyInput = document.getElementById("body");
+    const submitBtn = document.getElementById("submit-btn");
+    const sortSelect = document.getElementById("sort-select");
+    const container = document.getElementById("postits");
+
+    function showError(el, message) {
+      el.textContent = message;
+      el.hidden = false;
+    }
+
+    function clearError(el) {
+      el.hidden = true;
+    }
+
+    function resetForm() {
+      idInput.value = "";
+      titleInput.value = "";
+      projectInput.value = "";
+      bodyInput.value = "";
+      submitBtn.textContent = "Ajouter";
+    }
+
+    async function request(url, options) {
+      const response = await fetch(url, options);
+      if (response.status === 204) {
+        return null;
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur " + response.status);
+      }
+      return data;
+    }
+
+    async function loadPostits() {
+      clearError(listError);
+      try {
+        const postits = await request("/api/postit/list/?sort=" + sortSelect.value);
+        render(postits);
+      } catch (e) {
+        showError(listError, e.message);
+      }
+    }
+
+    function render(postits) {
+      container.innerHTML = "";
+      for (const p of postits) {
+        container.appendChild(createCard(p));
+      }
+    }
+
+    function createCard(p) {
+      const card = document.createElement("div");
+      card.className = "postit";
+
+      const title = document.createElement("h3");
+      title.textContent = p.title;
+
+      const date = document.createElement("span");
+      date.className = "date";
+      date.textContent = new Date(p.created_at).toLocaleString();
+
+      const projects = document.createElement("div");
+      projects.className = "projects";
+      for (const name of p.project.split("|")) {
+        const badge = document.createElement("span");
+        badge.textContent = name;
+        projects.appendChild(badge);
+      }
+
+      const body = document.createElement("p");
+      body.textContent = p.body;
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Modifier";
+      editBtn.addEventListener("click", () => {
+        idInput.value = p.id;
+        titleInput.value = p.title;
+        projectInput.value = p.project;
+        bodyInput.value = p.body;
+        submitBtn.textContent = "Enregistrer";
+        titleInput.focus();
+      });
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "Supprimer";
+      deleteBtn.addEventListener("click", async () => {
+        try {
+          await request("/api/postit/" + p.id, { method: "DELETE" });
+          await loadPostits();
+        } catch (e) {
+          showError(listError, e.message);
+        }
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+      card.appendChild(title);
+      card.appendChild(date);
+      card.appendChild(projects);
+      card.appendChild(body);
+      card.appendChild(actions);
+      return card;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearError(formError);
+      const id = idInput.value;
+      const payload = {
+        title: titleInput.value,
+        project: projectInput.value,
+        body: bodyInput.value,
+      };
+      const options = {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      };
+      const url = id ? "/api/postit/" + id : "/api/postit";
+      try {
+        await request(url, options);
+        resetForm();
+        await loadPostits();
+      } catch (e) {
+        showError(formError, e.message);
+      }
+    });
+
+    sortSelect.addEventListener("change", loadPostits);
+
+    loadPostits();
+  </script>
+</body>
+</html>
