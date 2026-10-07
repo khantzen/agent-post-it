@@ -9,6 +9,7 @@ services:
       POSTIT_DB: /app/data/postits.db
     volumes:
       - postit-data:/app/data
+    restart: unless-stopped
 
 volumes:
   postit-data:
