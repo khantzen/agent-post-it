@@ -16,6 +16,7 @@ shell = pkgs.mkShell {
   buildInputs = [
     pythonPackages
 
+    pkgs.sqlite
     pkgs.cowsay
     pkgs.fortune
   ];

@@ -28,6 +28,7 @@
     button { cursor: pointer; border: none; border-radius: 4px; padding: 0.5rem 1rem; font: inherit; }
     #submit-btn { background: #f5c518; font-weight: bold; width: 100%; }
     #sort-select { padding: 0.25rem; margin-left: 0.5rem; }
+    #project-filter { margin-left: 0.5rem; margin-right: 1rem; }
     #toolbar { max-width: 900px; margin: 0 auto 1rem; text-align: right; }
     #postits {
       display: grid;
@@ -76,6 +77,8 @@
   </div>
 
   <div id="toolbar">
+    Projets :
+    <select id="project-filter" title="Filtrer par projet"></select>
     Tri :
     <select id="sort-select">
       <option value="desc">Du plus recent au plus ancien</option>
@@ -96,7 +99,9 @@
     const bodyInput = document.getElementById("body");
     const submitBtn = document.getElementById("submit-btn");
     const sortSelect = document.getElementById("sort-select");
+    const projectFilter = document.getElementById("project-filter");
     const container = document.getElementById("postits");
+    let allPostits = [];
 
     function showError(el, message) {
       el.textContent = message;
@@ -130,11 +135,36 @@
     async function loadPostits() {
       clearError(listError);
       try {
-        const postits = await request("/api/postit/list/?sort=" + sortSelect.value);
-        render(postits);
+        allPostits = await request("/api/postit/list/?sort=" + sortSelect.value);
+        populateProjectFilter();
+        applyFilters();
       } catch (e) {
         showError(listError, e.message);
       }
+    }
+
+    function populateProjectFilter() {
+      const current = projectFilter.value;
+      projectFilter.innerHTML = "";
+      const names = [...new Set(allPostits.flatMap((p) => p.project.split("|")))].sort();
+      for (const name of names) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        projectFilter.appendChild(option);
+      }
+      if (names.includes(current)) {
+        projectFilter.value = current;
+      }
+    }
+
+    function applyFilters() {
+      const name = projectFilter.value;
+      if (!name) {
+        render(allPostits);
+        return;
+      }
+      render(allPostits.filter((p) => p.project.split("|").includes(name)));
     }
 
     function render(postits) {
@@ -228,6 +258,7 @@
     });
 
     sortSelect.addEventListener("change", loadPostits);
+    projectFilter.addEventListener("change", applyFilters);
 
     loadPostits();
   </script>
